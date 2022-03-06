@@ -1,14 +1,18 @@
 $ProgressPreference = 'SilentlyContinue'
 $InformationPreference = 'SilentlyContinue'
-[string]$varPath = $env:OneDrive +"\VS Code Workspace\BGP\jsonconfigs\"
+[string]$varPath = $env:OneDrive +"\VS Code Workspace\set-genericfactoid\get-bgpevents\jsonconfigs\"
 [string]$filePossibleHijack = "PossibleHijack.json"
 [string]$fileBGPLeak = "BGPLeak.json"
 [string]$filePossibleHijackOld = "PossibleHijackOld.json"
 [string]$fileBGPLeakOld = "BGPLeakOld.json"
+[string]$filePossibleHijackOneRecord = "PHJ1.json"
+[string]$fileBGPLeakOneRecord = "BGPL1.json"
 [string]$outPossibleHijack = $varPath + $filePossibleHijack
 [string]$outBGPLeak = $varPath + $fileBGPLeak
 [string]$outPossibleHijackold = $varPath + $filePossibleHijackold
 [string]$outBGPLeakold = $varPath + $fileBGPLeakold
+[string]$outPHJ1 = $varPath + $filePossibleHijackOneRecord
+[string]$outBGPL1 = $varPath + $fileBGPLeakOneRecord
 if ((test-path $outPossibleHijackold) -eq $True)
     {
         Remove-Item $outPossibleHijackold
@@ -213,9 +217,9 @@ foreach ($a in $arrBGPLeak)
         }
     else 
         {
-            $dateStart = $a.StartTime
+            [string]$dateStart = $a.StartTime
         }
-        [DateTime]$dateStart = $a.StartTime
+       # [DateTime]$dateStart = $a.StartTime
         $myObj = new-object psobject
         $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
         $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value $a.URL
@@ -237,6 +241,27 @@ $old = $hijackold[0]
 if ($new.StartTime -gt $old.StartTime)
     {
         write-host "New StartTime is more recent that Old StartTime "
+        write-host "Generating Output"
+        $new | ConvertTo-Json | Out-File $outPHJ1
+
+    }
+elseif ($new.StartTime -lt $old.StartTime)
+    {
+        write-host "New StartTime is less than Old StartTime "
+    }
+elseif ($new.StartTime -eq $old.StartTime)
+    {
+        write-host "New StartTime is equal to Old StartTime "
+    }
+$new = $null ; $old = $null
+$new = $arrFinalBGPLeak[0]
+$old = $bgpleakold[0]
+if ($new.StartTime -gt $old.StartTime)
+    {
+        write-host "New StartTime is more recent that Old StartTime "
+        write-host "Generating Output"
+        $new | ConvertTo-Json | Out-File $outBGPL1
+
     }
 elseif ($new.StartTime -lt $old.StartTime)
     {
