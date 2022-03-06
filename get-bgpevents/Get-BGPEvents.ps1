@@ -199,7 +199,7 @@ foreach ($a in $arrPossibleHijack)
         }
     else 
         {
-            $dateStart = $a.StartTime
+            [string]$dateStart = $a.StartTime
         }
         [DateTime]$dateStart = $a.StartTime
         $myObj = new-object psobject
