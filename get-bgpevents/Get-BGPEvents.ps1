@@ -13,6 +13,24 @@ $InformationPreference = 'SilentlyContinue'
 [string]$outBGPLeakold = $varPath + $fileBGPLeakold
 [string]$outPHJ1 = $varPath + $filePossibleHijackOneRecord
 [string]$outBGPL1 = $varPath + $fileBGPLeakOneRecord
+if ((test-path $outPHJ1) -eq $True)
+    {
+        Remove-Item $outPHJ1;
+        new-Item $outPHJ1;
+    }
+elseif ((test-path $outPHJ1) -eq $False)
+    {
+        New-Item $outPHJ1 -ItemType File
+    }
+if ((test-path $outBGPL1) -eq $True)
+    {
+        Remove-Item $outBGPL1
+        new-Item $outBGPL1
+    }
+if ((test-path $outBGPL1) -eq $False)
+    {
+        New-Item $outBGPL1 -ItemType File
+    }
 if ((test-path $outPossibleHijackold) -eq $True)
     {
         Remove-Item $outPossibleHijackold
@@ -59,6 +77,13 @@ if ((test-path $outBGPLeakold) -eq $False)
         $myObj | add-member -MemberType NoteProperty -Name "Description" -value "Dummy Data"
         $myObj | ConvertTo-Json | Out-File $outBGPLeakold
     }
+# Check for Credential Manager module
+# Need to rethink this.
+if ((get-module CredentialManager)) {} else {import-module CredentialManager}
+$varCred = Get-StoredCredential -target GenericFactoid
+$varToken = $varCred.Password | ConvertFrom-SecureString
+# EOF re-think
+# Prep the variables and arrays
 $uriBGPStream = @(); $arrColumnName = @(); $arrDataResult = @(); $arrTableRow = @(); $arrFinalResult = @();
 $arrDataResult = New-Object System.Collections.ArrayList;
 $arrColumnName = New-Object System.Collections.ArrayList;
@@ -75,8 +100,6 @@ $arrTableRow = $uriBGPStream.ParsedHtml.getElementsByTagName("TR")
 $arrContent = $arrTableRow | ForEach-Object {
     $_.getElementsByTagName("TD") 
 } 
-#$arrContent.Add(($arrTableRow | ForEach-Object {$_.getElementsByTagName("TD")}))
-#$arrContent.Add((($uriBGPStream.ParsedHtml.getElementsByTagName("TR")) | ForEach-Object {$_.getElementsByTagName("TD")}))
 $arrOuterHtml = $arrContent.outerHtml
 [int64]$i = 0
 foreach ($a in $arrOuterHtml)
@@ -150,26 +173,6 @@ foreach ($a in $arrOuterHtml)
             }
         $i++         
     }
-<# 
-Okay, so now everything is tucked inside $arrdataresult
-PS C:\Users\chuck\OneDrive\VS Code Workspace\BGP> $arrDataResult[0]
-Name                           Value
-----                           -----
-ID                             0
-Event_Type                     Outage
-PS C:\Users\chuck\OneDrive\VS Code Workspace\BGP> $arrDataResult[1]
-Name                           Value
-----                           -----
-Country
-ID                             1
-PS C:\Users\chuck\OneDrive\VS Code Workspace\BGP> $arrDataResult[2]
-Name                           Value
-----                           -----
-ASN                            NEWS TELECOM LTDA, BR (AS 265010)
-ID                             2
-
-Now i need to count every 6. 
-/#>
 [int64]$intDataResultCount = $arrDataResult.Count
 [int64]$intCounter = ( $intColumnCount -1 )
 #Break table data into smaller chuck of data.
@@ -258,8 +261,23 @@ if ($new.StartTime -gt $old.StartTime)
     {
         write-host "New StartTime is more recent than Old StartTime "
         write-host "Generating Output"
-        $new | ConvertTo-Json | Out-File $outPHJ1
-
+        $body = $new |ConvertTo-Json
+        $body | Out-File $outPHJ1
+        $varHeaders = @{
+            "Content-Type"="application/json"
+            "Authorization"= "Bearer $varToken"
+        }
+        # Replace with logic app
+        $uri = "https://localhost"
+        try
+            {
+                Invoke-WebRequest -uri $uri -Method post -Headers $varHeaders -body $body
+            }
+        catch
+            {
+                $_.exception
+                Break
+            }
     }
 elseif ($new.StartTime -lt $old.StartTime)
     {
