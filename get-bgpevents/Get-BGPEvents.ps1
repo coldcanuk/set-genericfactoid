@@ -39,6 +39,26 @@ else
     {
         new-item -ItemType file -path $outBGPLeak
     }
+if ((test-path $outPossibleHijackold) -eq $False)
+    {
+        new-item $outPossibleHijackold
+        [DateTime]$dateStart = ([datetime]::Now).AddDays(-1000)
+        $myObj = new-object psobject
+        $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
+        $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value "https://bgpstream.com"
+        $myObj | add-member -MemberType NoteProperty -Name "Description" -value "Dummy Data"
+        $myObj | ConvertTo-Json | Out-File $outPossibleHijackold
+    }
+if ((test-path $outBGPLeakold) -eq $False)
+    {
+        New-Item $outBGPLeakold
+        [DateTime]$dateStart = ([datetime]::Now).AddDays(-1000)
+        $myObj = new-object psobject
+        $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
+        $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value "https://bgpstream.com"
+        $myObj | add-member -MemberType NoteProperty -Name "Description" -value "Dummy Data"
+        $myObj | ConvertTo-Json | Out-File $outBGPLeakold
+    }
 $uriBGPStream = @(); $arrColumnName = @(); $arrDataResult = @(); $arrTableRow = @(); $arrFinalResult = @();
 $arrDataResult = New-Object System.Collections.ArrayList;
 $arrColumnName = New-Object System.Collections.ArrayList;
@@ -193,38 +213,34 @@ $arrFinalBGPLeak = New-Object System.Collections.ArrayList;
 $a = $null
 foreach ($a in $arrPossibleHijack)
     {
-        if ($a.starttime)
+        if (($a).StartTime)
         {
             [DateTime]$dateStart = ($a.StartTime).ToDateTime($_)
+            $myObj = new-object psobject
+            $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
+            $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value $a.URL
+            $myObj | add-member -MemberType NoteProperty -Name "Description" -value $a.ASN
+            $arrFinalPossibleHijack.Add($myObj); 
         }
     else 
         {
-            [string]$dateStart = $a.StartTime
         }
-        [DateTime]$dateStart = $a.StartTime
-        $myObj = new-object psobject
-        $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
-        $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value $a.URL
-        $myObj | add-member -MemberType NoteProperty -Name "Description" -value $a.ASN
-        $arrFinalPossibleHijack.Add($myObj); 
     }
-$a = $null
+$a = $null;
 foreach ($a in $arrBGPLeak)
     {
-        if ($a.starttime)
+        if (($a).StartTime)
         {
             [DateTime]$dateStart = ($a.StartTime).ToDateTime($_)
+            $myObj = new-object psobject
+            $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
+            $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value $a.URL
+            $myObj | add-member -MemberType NoteProperty -Name "Description" -value $a.ASN
+            $arrFinalBGPLeak.Add($myObj); 
         }
     else 
         {
-            [string]$dateStart = $a.StartTime
         }
-       # [DateTime]$dateStart = $a.StartTime
-        $myObj = new-object psobject
-        $myObj | add-member -MemberType NoteProperty -Name "StartTime" -value $dateStart
-        $myObj | Add-Member -MemberType NoteProperty -Name "URL" -value $a.URL
-        $myObj | add-member -MemberType NoteProperty -Name "Description" -value $a.ASN
-        $arrFinalBGPLeak.Add($myObj); 
     }
 #Sort the New Arrays
 $arrFinalPossibleHijack = $arrFinalPossibleHijack | sort-object StartTime -Descending
@@ -240,7 +256,7 @@ $new = $arrFinalPossibleHijack[0]
 $old = $hijackold[0]
 if ($new.StartTime -gt $old.StartTime)
     {
-        write-host "New StartTime is more recent that Old StartTime "
+        write-host "New StartTime is more recent than Old StartTime "
         write-host "Generating Output"
         $new | ConvertTo-Json | Out-File $outPHJ1
 
@@ -258,7 +274,7 @@ $new = $arrFinalBGPLeak[0]
 $old = $bgpleakold[0]
 if ($new.StartTime -gt $old.StartTime)
     {
-        write-host "New StartTime is more recent that Old StartTime "
+        write-host "New StartTime is more recent than Old StartTime "
         write-host "Generating Output"
         $new | ConvertTo-Json | Out-File $outBGPL1
 
