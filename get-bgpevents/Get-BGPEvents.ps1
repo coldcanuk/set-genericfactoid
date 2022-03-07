@@ -265,13 +265,14 @@ if ($new.StartTime -gt $old.StartTime)
         $body | Out-File $outPHJ1
         $varHeaders = @{
             "Content-Type"="application/json"
-            "Authorization"= "Bearer $varToken"
+            #"Authorization"= "Bearer $varToken" #Cheat for now
+            "Password"=$varToken
         }
         # Replace with logic app
         $uri = "https://localhost"
         try
             {
-                Invoke-WebRequest -uri $uri -Method post -Headers $varHeaders -body $body
+                Invoke-RestMethod -uri $uri -Method post -Headers $varHeaders -body $body
             }
         catch
             {
