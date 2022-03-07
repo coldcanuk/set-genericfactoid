@@ -252,8 +252,8 @@ $arrFinalBGPLeak = $arrFinalBGPLeak | sort-object StartTime -Descending
 $arrFinalPossibleHijack | ConvertTo-Json | Out-File $outPossibleHijack
 $arrFinalBGPLeak | ConvertTo-Json | Out-File $outBGPLeak
 # Load the old data
-$hijackold = gc $outPossibleHijackold | ConvertFrom-Json | Sort-Object StartTime -Descending
-$bgpleakold = gc $outBGPLeakold | ConvertFrom-Json | Sort-Object StartTime -Descending
+$hijackold = Get-Content $outPossibleHijackold | ConvertFrom-Json | Sort-Object StartTime -Descending
+$bgpleakold = Get-Content $outBGPLeakold | ConvertFrom-Json | Sort-Object StartTime -Descending
 # Check to see if we have a new alert
 $new = $arrFinalPossibleHijack[0]
 $old = $hijackold[0]
